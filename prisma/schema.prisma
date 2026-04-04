@@ -6,9 +6,10 @@ datasource db {
   provider = "postgresql"
 }
 
+
 enum Role {
   PATIENT
-  DOCTOR
+  CARE_GIVER
   ADMIN
 }
 
@@ -18,14 +19,7 @@ model User {
   email     String   @unique
   password  String
   role      Role     @default(PATIENT)
+  isBlock   Boolean  @default(false)
   createdAt DateTime @default(now())
-}
 
-model Appointment {
-  id        Int      @id @default(autoincrement())
-  date      String
-  time      String
-  status    String
-  patientId Int
-  doctorId  Int
 }
