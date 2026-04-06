@@ -13,13 +13,35 @@ enum Role {
   ADMIN
 }
 
-model User {
-  id        Int      @id @default(autoincrement())
-  name      String
-  email     String   @unique
-  password  String
-  role      Role     @default(PATIENT)
-  isBlock   Boolean  @default(false)
-  createdAt DateTime @default(now())
+enum AssignmentStatus {
+  PENDING
+  ACCEPTED
+  COMPLETED
+  CANCELLED
+}
 
+model User {
+  id                    Int          @id @default(autoincrement())
+  name                  String
+  email                 String       @unique
+  password              String
+  role                  Role         @default(PATIENT)
+  isBlock               Boolean      @default(false)
+  createdAt             DateTime     @default(now())
+  patientAssignments    Assignment[] @relation("PatientAssignments")
+  careGiverAssignments  Assignment[] @relation("CareGiverAssignments")
+
+}
+
+model Assignment {
+  id          Int              @id @default(autoincrement())
+  patientId   Int
+  careGiverId Int?
+  status      AssignmentStatus @default(PENDING)
+  notes       String?
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  patient     User             @relation("PatientAssignments", fields: [patientId], references: [id])
+  careGiver   User?            @relation("CareGiverAssignments", fields: [careGiverId], references: [id])
 }
