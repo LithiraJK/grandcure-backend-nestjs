@@ -1,4 +1,4 @@
-import { IsDefined, IsEmail, IsString, IsEnum, IsNotEmpty, MinLength } from 'class-validator';
+import { IsDefined, IsEmail, IsString, IsEnum, IsNotEmpty, MinLength, IsIn } from 'class-validator';
 
 export enum RegisterRole {
   PATIENT = 'PATIENT',
@@ -26,5 +26,6 @@ export class RegisterDto {
 
   @IsDefined()
   @IsEnum(RegisterRole)
+  @IsIn(['PATIENT', 'CARE_GIVER'])
   role!: RegisterRole;
 }
