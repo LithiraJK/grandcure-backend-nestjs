@@ -30,6 +30,13 @@ model User {
   isBlock               Boolean      @default(false)
   latitude              Float?
   longitude             Float?
+  phoneNumber           String?
+  dateOfBirth           DateTime?    @db.Date
+  address               String?
+  designation           String?
+  hourlyRate            Float?
+  idDocumentUrl         String?
+  certDocumentUrl       String?
   createdAt             DateTime     @default(now())
   patientAssignments    Assignment[] @relation("PatientAssignments")
   careGiverAssignments  Assignment[] @relation("CareGiverAssignments")
