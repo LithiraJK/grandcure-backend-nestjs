@@ -32,14 +32,14 @@ export class AssignmentsController {
   @Roles('PATIENT')
   @Post('request')
   requestAssignment(@Req() req: AuthenticatedRequest, @Body() dto: RequestAssignmentDto) {
-    return this.assignmentsService.requestAssignment(req.user.id, req.user.role, dto.notes);
+    return this.assignmentsService.requestAssignment(req.user.id, req.user.role, dto.type, dto.notes);
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('CARE_GIVER')
   @Get('pending')
   getPendingAssignments(@Req() req: AuthenticatedRequest) {
-    return this.assignmentsService.getPendingAssignments(req.user.role);
+    return this.assignmentsService.getPendingAssignments(req.user.id, req.user.role);
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
@@ -51,6 +51,13 @@ export class AssignmentsController {
 
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('CARE_GIVER')
+  @Patch(':id/start')
+  startAssignment(@Param('id', ParseIntPipe) id: number, @Req() req: AuthenticatedRequest) {
+    return this.assignmentsService.startAssignment(id, req.user.id, req.user.role);
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('CARE_GIVER')
   @Patch(':id/complete')
   completeAssignment(@Param('id', ParseIntPipe) id: number, @Req() req: AuthenticatedRequest) {
     return this.assignmentsService.completeAssignment(id, req.user.id, req.user.role);
@@ -58,8 +65,15 @@ export class AssignmentsController {
 
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('PATIENT')
-  @Patch(':id/cancel')
-  cancelAssignment(@Param('id', ParseIntPipe) id: number, @Req() req: AuthenticatedRequest) {
-    return this.assignmentsService.cancelAssignment(id, req.user.id, req.user.role);
+  @Get('history/patient')
+  getPatientHistory(@Req() req: AuthenticatedRequest) {
+    return this.assignmentsService.getPatientHistory(req.user.id, req.user.role);
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('CARE_GIVER')
+  @Get('history/caregiver')
+  getCareGiverHistory(@Req() req: AuthenticatedRequest) {
+    return this.assignmentsService.getCareGiverHistory(req.user.id, req.user.role);
   }
 }
