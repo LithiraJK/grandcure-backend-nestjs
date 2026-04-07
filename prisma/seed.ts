@@ -1,9 +1,18 @@
 import 'dotenv/config';
 
 import { PrismaClient, Role } from '@prisma/client';
+import { PrismaPg } from '@prisma/adapter-pg';
 import * as bcrypt from 'bcrypt';
 
-const prisma = new PrismaClient();
+const connectionString = process.env.DATABASE_URL;
+
+if (!connectionString?.trim()) {
+  throw new Error('DATABASE_URL is not set');
+}
+
+const prisma = new PrismaClient({
+  adapter: new PrismaPg({ connectionString }),
+});
 
 async function main(): Promise<void> {
   const adminEmail = process.env.DEFAULT_ADMIN_EMAIL?.trim();
