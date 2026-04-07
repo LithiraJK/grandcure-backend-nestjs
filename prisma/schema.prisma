@@ -40,6 +40,8 @@ model User {
   createdAt             DateTime     @default(now())
   patientAssignments    Assignment[] @relation("PatientAssignments")
   careGiverAssignments  Assignment[] @relation("CareGiverAssignments")
+  patientReviews        Review[]     @relation("PatientReviews")
+  careGiverReviews      Review[]     @relation("CareGiverReviews")
 
 }
 
@@ -55,4 +57,23 @@ model Assignment {
 
   patient     User             @relation("PatientAssignments", fields: [patientId], references: [id])
   careGiver   User?            @relation("CareGiverAssignments", fields: [careGiverId], references: [id])
+  review      Review?
+}
+
+model Review {
+  id           Int        @id @default(autoincrement())
+  assignmentId Int        @unique
+  patientId    Int
+  careGiverId  Int
+  rating       Int
+  comment      String?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  assignment   Assignment @relation(fields: [assignmentId], references: [id])
+  patient      User       @relation("PatientReviews", fields: [patientId], references: [id])
+  careGiver    User       @relation("CareGiverReviews", fields: [careGiverId], references: [id])
+
+  @@index([careGiverId])
+  @@index([patientId])
 }
