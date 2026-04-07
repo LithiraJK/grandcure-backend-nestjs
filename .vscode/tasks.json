@@ -12,6 +12,18 @@
 				"prisma/schema.prisma"
 			],
 			"isBackground": false
+		},
+		{
+			"label": "Prisma Generate",
+			"type": "shell",
+			"command": "npx",
+			"args": [
+				"prisma",
+				"generate",
+				"--schema",
+				"prisma/schema.prisma"
+			],
+			"isBackground": false
 		}
 	]
 }

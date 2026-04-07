@@ -16,6 +16,7 @@ enum Role {
 enum AssignmentStatus {
   PENDING
   ACCEPTED
+  IN_PROGRESS
   COMPLETED
   CANCELLED
 }
@@ -27,6 +28,8 @@ model User {
   password              String
   role                  Role         @default(PATIENT)
   isBlock               Boolean      @default(false)
+  latitude              Float?
+  longitude             Float?
   createdAt             DateTime     @default(now())
   patientAssignments    Assignment[] @relation("PatientAssignments")
   careGiverAssignments  Assignment[] @relation("CareGiverAssignments")
@@ -37,6 +40,7 @@ model Assignment {
   id          Int              @id @default(autoincrement())
   patientId   Int
   careGiverId Int?
+  type        String           @default("NORMAL")
   status      AssignmentStatus @default(PENDING)
   notes       String?
   createdAt   DateTime         @default(now())
