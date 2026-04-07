@@ -48,4 +48,18 @@ export class AssignmentsController {
   acceptAssignment(@Param('id', ParseIntPipe) id: number, @Req() req: AuthenticatedRequest) {
     return this.assignmentsService.acceptAssignment(id, req.user.id, req.user.role);
   }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('CARE_GIVER')
+  @Patch(':id/complete')
+  completeAssignment(@Param('id', ParseIntPipe) id: number, @Req() req: AuthenticatedRequest) {
+    return this.assignmentsService.completeAssignment(id, req.user.id, req.user.role);
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('PATIENT')
+  @Patch(':id/cancel')
+  cancelAssignment(@Param('id', ParseIntPipe) id: number, @Req() req: AuthenticatedRequest) {
+    return this.assignmentsService.cancelAssignment(id, req.user.id, req.user.role);
+  }
 }
