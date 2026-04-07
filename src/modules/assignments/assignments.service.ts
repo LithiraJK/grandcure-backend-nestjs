@@ -42,7 +42,18 @@ export class AssignmentsService {
       select: { latitude: true, longitude: true },
     });
 
-    if (!careGiver || careGiver.latitude == null || careGiver.longitude == null) {
+    if (!careGiver) {
+      throw new BadRequestException('Caregiver coordinates are not set');
+    }
+
+    const careGiverRecord = await this.prisma.user.findUnique({ where: { id: careGiverId } });
+    const isVerified = Boolean((careGiverRecord as { isVerified?: boolean } | null)?.isVerified);
+
+    if (!isVerified) {
+      throw new ForbiddenException('Your profile is pending administrator verification');
+    }
+
+    if (careGiver.latitude == null || careGiver.longitude == null) {
       throw new BadRequestException('Caregiver coordinates are not set');
     }
 
@@ -90,6 +101,17 @@ export class AssignmentsService {
   async acceptAssignment(id: number, careGiverId: number, careGiverRole: Role) {
     if (careGiverRole !== Role.CARE_GIVER) {
       throw new ForbiddenException('Only CARE_GIVER can accept assignments');
+    }
+
+    const careGiver = await this.prisma.user.findUnique({ where: { id: careGiverId } });
+
+    if (!careGiver) {
+      throw new NotFoundException('Caregiver not found');
+    }
+
+    const isVerified = Boolean((careGiver as { isVerified?: boolean }).isVerified);
+    if (!isVerified) {
+      throw new ForbiddenException('Your profile is pending administrator verification');
     }
 
     const assignment = await this.prisma.assignment.findUnique({ where: { id } });

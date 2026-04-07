@@ -23,7 +23,15 @@ export class AuthService {
   async login(email: string, password: string) {
     const user = await this.users.findByEmail(email);
     if (!user) throw new UnauthorizedException('Invalid credentials');
-    if (user.isBlock) throw new ForbiddenException('Account is blocked');
+
+    const blocked =
+      (user as { isBlocked?: boolean; isBlock?: boolean }).isBlocked ??
+      (user as { isBlocked?: boolean; isBlock?: boolean }).isBlock ??
+      false;
+
+    if (blocked) {
+      throw new ForbiddenException('Your account has been blocked by an administrator');
+    }
 
     const match = await bcrypt.compare(password, user.password);
     if (!match) throw new UnauthorizedException('Invalid credentials');
