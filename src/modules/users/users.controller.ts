@@ -15,6 +15,13 @@ import { UsersService } from './users.service';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import multer from 'multer';
+import { Roles } from '../../common/decorators/roles.decorator';
+import { RolesGuard } from '../../common/guards/roles.guard';
+
+type UploadedDocumentFile = {
+	buffer: Buffer;
+	mimetype: string;
+};
 
 @Controller('users')
 export class UsersController {
@@ -26,7 +33,8 @@ export class UsersController {
 		return this.usersService.getProfile(req.user.id);
 	}
 
-	@UseGuards(JwtAuthGuard)
+	@UseGuards(JwtAuthGuard, RolesGuard)
+	@Roles('CARE_GIVER')
 	@Patch('profile')
 	updateProfile(
 		@Req() req: Request & { user: { id: number } },
@@ -35,7 +43,8 @@ export class UsersController {
 		return this.usersService.updateProfile(req.user.id, dto);
 	}
 
-	@UseGuards(JwtAuthGuard)
+	@UseGuards(JwtAuthGuard, RolesGuard)
+	@Roles('CARE_GIVER')
 	@Post('profile/documents')
 	@UseInterceptors(
 		FileFieldsInterceptor(
@@ -56,8 +65,8 @@ export class UsersController {
 		@Req() req: Request & { user: { id: number } },
 		@UploadedFiles()
 		files: {
-			idDocument?: Express.Multer.File[];
-			certDocument?: Express.Multer.File[];
+			idDocument?: UploadedDocumentFile[];
+			certDocument?: UploadedDocumentFile[];
 		},
 	) {
 		return this.usersService.uploadProfileDocuments(req.user.id, files);

@@ -5,6 +5,11 @@ import { RegisterRole } from '../auth/dto/register.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { CloudinaryService } from '../../utils/cloudinary.service';
 
+type UploadedDocumentFile = {
+  buffer: Buffer;
+  mimetype: string;
+};
+
 @Injectable()
 export class UsersService {
   constructor(
@@ -101,8 +106,8 @@ export class UsersService {
   async uploadProfileDocuments(
     userId: number,
     files: {
-      idDocument?: Express.Multer.File[];
-      certDocument?: Express.Multer.File[];
+      idDocument?: UploadedDocumentFile[];
+      certDocument?: UploadedDocumentFile[];
     },
   ) {
     const existing = await this.prisma.user.findUnique({ where: { id: userId }, select: { id: true } });
