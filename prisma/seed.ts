@@ -14,12 +14,28 @@ const prisma = new PrismaClient({
   adapter: new PrismaPg({ connectionString }),
 });
 
+function isStrongPassword(password: string): boolean {
+  const hasMinLength = password.length >= 12;
+  const hasUpper = /[A-Z]/.test(password);
+  const hasLower = /[a-z]/.test(password);
+  const hasNumber = /\d/.test(password);
+  const hasSpecial = /[^A-Za-z0-9]/.test(password);
+
+  return hasMinLength && hasUpper && hasLower && hasNumber && hasSpecial;
+}
+
 async function main(): Promise<void> {
   const adminEmail = process.env.DEFAULT_ADMIN_EMAIL?.trim();
   const adminPassword = process.env.DEFAULT_ADMIN_PASSWORD?.trim();
 
   if (!adminEmail || !adminPassword) {
     throw new Error('Admin credentials are missing in .env');
+  }
+
+  if (!isStrongPassword(adminPassword)) {
+    throw new Error(
+      'DEFAULT_ADMIN_PASSWORD must be at least 12 characters and include uppercase, lowercase, number, and special character',
+    );
   }
 
   const existingAdmin = await prisma.user.findUnique({
