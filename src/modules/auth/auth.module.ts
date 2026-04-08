@@ -5,8 +5,15 @@ import { UsersModule } from '../users/users.module';
 import { JwtModule } from '@nestjs/jwt';
 import { JwtStrategy } from './jwt.strategy';
 import { PrismaModule } from '../../prisma/prisma.module';
+import type { StringValue } from 'ms';
 
-const jwtSecret = process.env.JWT_SECRET ?? 'dev_jwt_secret';
+const jwtSecret = process.env.JWT_SECRET?.trim();
+
+if (!jwtSecret) {
+  throw new Error('JWT_SECRET is not set');
+}
+
+const jwtExpiresIn = (process.env.JWT_EXPIRES_IN?.trim() || '7d') as StringValue;
 
 @Module({
   imports: [
@@ -14,7 +21,7 @@ const jwtSecret = process.env.JWT_SECRET ?? 'dev_jwt_secret';
     PrismaModule,
     JwtModule.register({
       secret: jwtSecret,
-      signOptions: { expiresIn: '7d' },
+      signOptions: { expiresIn: jwtExpiresIn },
     }),
   ],
   controllers: [AuthController],

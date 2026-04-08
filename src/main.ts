@@ -14,6 +14,14 @@ async function bootstrap() {
   // Enforce DTO validation for auth requests.
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }));
   app.useGlobalInterceptors(new ResponseInterceptor());
-  await app.listen(process.env.PORT ?? 8080);
+
+  const portRaw = process.env.PORT?.trim();
+  const port = Number(portRaw);
+
+  if (!portRaw || !Number.isInteger(port) || port < 1 || port > 65535) {
+    throw new Error('PORT must be set to a valid integer between 1 and 65535');
+  }
+
+  await app.listen(port);
 }
 bootstrap();
