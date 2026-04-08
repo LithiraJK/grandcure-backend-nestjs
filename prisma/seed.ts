@@ -25,6 +25,13 @@ function isStrongPassword(password: string): boolean {
 }
 
 async function main(): Promise<void> {
+  console.log("Connecting to database...");
+
+  await prisma.$connect();
+
+  console.log("Database connected successfully!");
+
+
   const adminEmail = process.env.DEFAULT_ADMIN_EMAIL?.trim();
   const adminPassword = process.env.DEFAULT_ADMIN_PASSWORD?.trim();
 
@@ -65,7 +72,7 @@ async function main(): Promise<void> {
 
 main()
   .catch((error) => {
-    console.error(error);
+    console.error('Seed failed:', error);
     process.exit(1);
   })
   .finally(async () => {
