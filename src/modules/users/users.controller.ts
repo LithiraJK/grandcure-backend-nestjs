@@ -14,9 +14,9 @@ import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { UsersService } from './users.service';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
-import multer from 'multer';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { RolesGuard } from '../../common/guards/roles.guard';
+import { documentUploadOptions } from '../../middleware/upload.middleware';
 
 type UploadedDocumentFile = {
 	buffer: Buffer;
@@ -52,13 +52,7 @@ export class UsersController {
 				{ name: 'idDocument', maxCount: 1 },
 				{ name: 'certDocument', maxCount: 1 },
 			],
-			{
-				storage: multer.memoryStorage(),
-				limits: {
-					fileSize: 5 * 1024 * 1024,
-					files: 2,
-				},
-			},
+			documentUploadOptions,
 		),
 	)
 	uploadProfileDocuments(
