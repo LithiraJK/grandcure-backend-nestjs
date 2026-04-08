@@ -1,12 +1,16 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
 import { RegisterRole } from '../auth/dto/register.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
+import { CloudinaryService } from '../../utils/cloudinary.service';
 
 @Injectable()
 export class UsersService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private readonly cloudinaryService: CloudinaryService,
+  ) {}
 
   async createUser(name: string, email: string, password: string, role: RegisterRole) {
   const hashed = await bcrypt.hash(password, 10);
@@ -91,6 +95,55 @@ export class UsersService {
     return {
       message: 'User profile updated successfully',
       result: updated,
+    };
+  }
+
+  async uploadProfileDocuments(
+    userId: number,
+    files: {
+      idDocument?: Express.Multer.File[];
+      certDocument?: Express.Multer.File[];
+    },
+  ) {
+    const existing = await this.prisma.user.findUnique({ where: { id: userId }, select: { id: true } });
+    if (!existing) {
+      throw new NotFoundException('User not found');
+    }
+
+    const idDocumentFile = files?.idDocument?.[0];
+    const certDocumentFile = files?.certDocument?.[0];
+
+    if (!idDocumentFile && !certDocumentFile) {
+      throw new BadRequestException('At least one document file is required');
+    }
+
+    const allowedMimeTypes = new Set(['image/jpeg', 'image/png', 'image/webp']);
+
+    if (idDocumentFile && !allowedMimeTypes.has(idDocumentFile.mimetype)) {
+      throw new BadRequestException('idDocument must be a JPEG, PNG, or WEBP image');
+    }
+
+    if (certDocumentFile && !allowedMimeTypes.has(certDocumentFile.mimetype)) {
+      throw new BadRequestException('certDocument must be a JPEG, PNG, or WEBP image');
+    }
+
+    const folderName = `users/${userId}/documents`;
+
+    const [idUploadResult, certUploadResult] = await Promise.all([
+      idDocumentFile
+        ? this.cloudinaryService.uploadImageToCloudinary(idDocumentFile.buffer, folderName)
+        : Promise.resolve(undefined),
+      certDocumentFile
+        ? this.cloudinaryService.uploadImageToCloudinary(certDocumentFile.buffer, folderName)
+        : Promise.resolve(undefined),
+    ]);
+
+    return {
+      message: 'Documents uploaded successfully',
+      result: {
+        idDocumentUrl: idUploadResult?.url,
+        certDocumentUrl: certUploadResult?.url,
+      },
     };
   }
 }
