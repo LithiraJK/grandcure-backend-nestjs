@@ -10,7 +10,7 @@ export const documentUploadOptions: multer.Options = {
 	storage,
 	limits: {
 		fileSize: 5 * 1024 * 1024,
-		files: 2,
+		files: 3,
 	},
 	fileFilter: (_req, file, cb) => {
 		if (!allowedDocumentMimeTypes.has(file.mimetype)) {

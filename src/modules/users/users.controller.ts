@@ -49,6 +49,7 @@ export class UsersController {
 	@UseInterceptors(
 		FileFieldsInterceptor(
 			[
+				{ name: 'profileImage', maxCount: 1 },
 				{ name: 'idDocument', maxCount: 1 },
 				{ name: 'certDocument', maxCount: 1 },
 			],
@@ -59,6 +60,7 @@ export class UsersController {
 		@Req() req: Request & { user: { id: number } },
 		@UploadedFiles()
 		files: {
+			profileImage?: UploadedDocumentFile[];
 			idDocument?: UploadedDocumentFile[];
 			certDocument?: UploadedDocumentFile[];
 		},

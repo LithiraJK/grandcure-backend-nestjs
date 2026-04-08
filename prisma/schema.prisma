@@ -36,6 +36,7 @@ model User {
   address               String?
   designation           String?
   hourlyRate            Float?
+  profileImageUrl       String?
   idDocumentUrl         String?
   certDocumentUrl       String?
   createdAt             DateTime     @default(now())

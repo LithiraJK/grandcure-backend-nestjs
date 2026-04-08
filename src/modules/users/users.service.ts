@@ -45,6 +45,7 @@ export class UsersService {
         address: true,
         designation: true,
         hourlyRate: true,
+        profileImageUrl: true,
         idDocumentUrl: true,
         certDocumentUrl: true,
         createdAt: true,
@@ -75,6 +76,7 @@ export class UsersService {
         address: dto.address,
         designation: dto.designation,
         hourlyRate: dto.hourlyRate,
+        profileImageUrl: dto.profileImageUrl,
         idDocumentUrl: dto.idDocumentUrl,
         certDocumentUrl: dto.certDocumentUrl,
       },
@@ -91,6 +93,7 @@ export class UsersService {
         address: true,
         designation: true,
         hourlyRate: true,
+        profileImageUrl: true,
         idDocumentUrl: true,
         certDocumentUrl: true,
         createdAt: true,
@@ -106,6 +109,7 @@ export class UsersService {
   async uploadProfileDocuments(
     userId: number,
     files: {
+      profileImage?: UploadedDocumentFile[];
       idDocument?: UploadedDocumentFile[];
       certDocument?: UploadedDocumentFile[];
     },
@@ -115,14 +119,19 @@ export class UsersService {
       throw new NotFoundException('User not found');
     }
 
+    const profileImageFile = files?.profileImage?.[0];
     const idDocumentFile = files?.idDocument?.[0];
     const certDocumentFile = files?.certDocument?.[0];
 
-    if (!idDocumentFile && !certDocumentFile) {
-      throw new BadRequestException('At least one document file is required');
+    if (!profileImageFile && !idDocumentFile && !certDocumentFile) {
+      throw new BadRequestException('At least one file is required');
     }
 
     const allowedMimeTypes = new Set(['image/jpeg', 'image/png', 'image/webp']);
+
+    if (profileImageFile && !allowedMimeTypes.has(profileImageFile.mimetype)) {
+      throw new BadRequestException('profileImage must be a JPEG, PNG, or WEBP image');
+    }
 
     if (idDocumentFile && !allowedMimeTypes.has(idDocumentFile.mimetype)) {
       throw new BadRequestException('idDocument must be a JPEG, PNG, or WEBP image');
@@ -132,20 +141,25 @@ export class UsersService {
       throw new BadRequestException('certDocument must be a JPEG, PNG, or WEBP image');
     }
 
-    const folderName = `users/${userId}/documents`;
+    const profileFolderName = `users/${userId}/profile`;
+    const documentFolderName = `users/${userId}/documents`;
 
-    const [idUploadResult, certUploadResult] = await Promise.all([
+    const [profileUploadResult, idUploadResult, certUploadResult] = await Promise.all([
+      profileImageFile
+        ? this.cloudinaryService.uploadImageToCloudinary(profileImageFile.buffer, profileFolderName)
+        : Promise.resolve(undefined),
       idDocumentFile
-        ? this.cloudinaryService.uploadImageToCloudinary(idDocumentFile.buffer, folderName)
+        ? this.cloudinaryService.uploadImageToCloudinary(idDocumentFile.buffer, documentFolderName)
         : Promise.resolve(undefined),
       certDocumentFile
-        ? this.cloudinaryService.uploadImageToCloudinary(certDocumentFile.buffer, folderName)
+        ? this.cloudinaryService.uploadImageToCloudinary(certDocumentFile.buffer, documentFolderName)
         : Promise.resolve(undefined),
     ]);
 
     return {
       message: 'Documents uploaded successfully',
       result: {
+        profileImageUrl: profileUploadResult?.url,
         idDocumentUrl: idUploadResult?.url,
         certDocumentUrl: certUploadResult?.url,
       },

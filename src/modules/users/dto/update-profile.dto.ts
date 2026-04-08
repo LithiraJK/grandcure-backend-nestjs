@@ -37,6 +37,10 @@ export class UpdateProfileDto {
 
   @IsOptional()
   @IsUrl()
+  profileImageUrl?: string;
+
+  @IsOptional()
+  @IsUrl()
   idDocumentUrl?: string;
 
   @IsOptional()
