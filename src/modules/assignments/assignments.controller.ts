@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   ParseIntPipe,
@@ -42,6 +43,13 @@ export class AssignmentsController {
       dto.location,
       dto.notes,
     );
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('PATIENT')
+  @Delete(':id/request')
+  deletePendingRequest(@Param('id', ParseIntPipe) id: number, @Req() req: AuthenticatedRequest) {
+    return this.assignmentsService.deletePendingRequest(id, req.user.id, req.user.role);
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)

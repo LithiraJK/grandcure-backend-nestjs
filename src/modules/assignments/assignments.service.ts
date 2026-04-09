@@ -115,6 +115,32 @@ export class AssignmentsService {
     };
   }
 
+  async deletePendingRequest(id: number, patientId: number, patientRole: Role) {
+    if (patientRole !== Role.PATIENT) {
+      throw new ForbiddenException('Only PATIENT can delete assignment requests');
+    }
+
+    const assignment = await this.prisma.assignment.findUnique({ where: { id } });
+    if (!assignment) {
+      throw new NotFoundException('Assignment not found');
+    }
+
+    if (assignment.patientId !== patientId) {
+      throw new ForbiddenException('You can only delete your own assignment requests');
+    }
+
+    if (assignment.status !== AssignmentStatus.PENDING) {
+      throw new ConflictException('Only pending assignment requests can be deleted');
+    }
+
+    const deleted = await this.prisma.assignment.delete({ where: { id } });
+
+    return {
+      message: 'Assignment request deleted successfully',
+      result: deleted,
+    };
+  }
+
   async acceptAssignment(id: number, careGiverId: number, careGiverRole: Role) {
     if (careGiverRole !== Role.CARE_GIVER) {
       throw new ForbiddenException('Only CARE_GIVER can accept assignments');
