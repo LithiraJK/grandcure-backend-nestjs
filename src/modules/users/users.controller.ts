@@ -35,13 +35,13 @@ export class UsersController {
 	}
 
 	@UseGuards(JwtAuthGuard, RolesGuard)
-	@Roles('CARE_GIVER')
+	@Roles('PATIENT', 'CARE_GIVER')
 	@Patch('profile')
 	updateProfile(
-		@Req() req: Request & { user: { id: number } },
+		@Req() req: Request & { user: { id: number; role: string } },
 		@Body() dto: UpdateProfileDto,
 	) {
-		return this.usersService.updateProfile(req.user.id, dto);
+		return this.usersService.updateProfile(req.user.id, req.user.role, dto);
 	}
 
 	@UseGuards(JwtAuthGuard, RolesGuard)
@@ -55,7 +55,7 @@ export class UsersController {
 	}
 
 	@UseGuards(JwtAuthGuard, RolesGuard)
-	@Roles('CARE_GIVER')
+	@Roles('PATIENT', 'CARE_GIVER')
 	@Post('profile/documents')
 	@UseInterceptors(
 		FileFieldsInterceptor(
@@ -68,7 +68,7 @@ export class UsersController {
 		),
 	)
 	uploadProfileDocuments(
-		@Req() req: Request & { user: { id: number } },
+		@Req() req: Request & { user: { id: number; role: string } },
 		@UploadedFiles()
 		files: {
 			profileImage?: UploadedDocumentFile[];
@@ -76,6 +76,6 @@ export class UsersController {
 			certDocument?: UploadedDocumentFile[];
 		},
 	) {
-		return this.usersService.uploadProfileDocuments(req.user.id, files);
+		return this.usersService.uploadProfileDocuments(req.user.id, req.user.role, files);
 	}
 }

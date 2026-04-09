@@ -10,6 +10,12 @@ type UploadedDocumentFile = {
   mimetype: string;
 };
 
+const CAREGIVER_ONLY_PROFILE_FIELDS: Array<keyof UpdateProfileDto> = [
+  'designation',
+  'hourlyRate',
+  'certDocumentUrl',
+];
+
 @Injectable()
 export class UsersService {
   constructor(
@@ -63,10 +69,23 @@ export class UsersService {
     };
   }
 
-  async updateProfile(userId: number, dto: UpdateProfileDto) {
+  async updateProfile(userId: number, role: string, dto: UpdateProfileDto) {
     const existing = await this.prisma.user.findUnique({ where: { id: userId }, select: { id: true } });
     if (!existing) {
       throw new NotFoundException('User not found');
+    }
+
+    const normalizedRole = this.normalizeRole(role);
+    if (normalizedRole === 'PATIENT') {
+      const blockedFields = CAREGIVER_ONLY_PROFILE_FIELDS.filter(
+        (field) => dto[field] !== undefined,
+      );
+
+      if (blockedFields.length > 0) {
+        throw new BadRequestException(
+          `Patients cannot update these fields: ${blockedFields.join(', ')}`,
+        );
+      }
     }
 
     const updated = await this.prisma.user.update({
@@ -137,6 +156,7 @@ export class UsersService {
 
   async uploadProfileDocuments(
     userId: number,
+    role: string,
     files: {
       profileImage?: UploadedDocumentFile[];
       idDocument?: UploadedDocumentFile[];
@@ -148,9 +168,15 @@ export class UsersService {
       throw new NotFoundException('User not found');
     }
 
+    const normalizedRole = this.normalizeRole(role);
+
     const profileImageFile = files?.profileImage?.[0];
     const idDocumentFile = files?.idDocument?.[0];
     const certDocumentFile = files?.certDocument?.[0];
+
+    if (normalizedRole === 'PATIENT' && certDocumentFile) {
+      throw new BadRequestException('Patients cannot upload certDocument');
+    }
 
     if (!profileImageFile && !idDocumentFile && !certDocumentFile) {
       throw new BadRequestException('At least one file is required');
@@ -193,5 +219,10 @@ export class UsersService {
         certDocumentUrl: certUploadResult?.url,
       },
     };
+  }
+
+  private normalizeRole(role: string): string {
+    if (!role) return role;
+    return role.replace(/^ROLE_/, '');
   }
 }
