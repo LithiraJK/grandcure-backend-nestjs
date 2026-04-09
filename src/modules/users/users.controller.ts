@@ -13,6 +13,7 @@ import { Request } from 'express';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { UsersService } from './users.service';
 import { UpdateProfileDto } from './dto/update-profile.dto';
+import { SetAvailabilityDto } from './dto/set-availability.dto';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { RolesGuard } from '../../common/guards/roles.guard';
@@ -41,6 +42,16 @@ export class UsersController {
 		@Body() dto: UpdateProfileDto,
 	) {
 		return this.usersService.updateProfile(req.user.id, dto);
+	}
+
+	@UseGuards(JwtAuthGuard, RolesGuard)
+	@Roles('CARE_GIVER')
+	@Patch('availability')
+	setAvailability(
+		@Req() req: Request & { user: { id: number } },
+		@Body() dto: SetAvailabilityDto,
+	) {
+		return this.usersService.setAvailability(req.user.id, dto.isAvailable);
 	}
 
 	@UseGuards(JwtAuthGuard, RolesGuard)

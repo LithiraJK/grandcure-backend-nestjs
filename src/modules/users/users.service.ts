@@ -38,6 +38,7 @@ export class UsersService {
         email: true,
         role: true,
         isBlocked: true,
+        isAvailable: true,
         latitude: true,
         longitude: true,
         phoneNumber: true,
@@ -88,6 +89,7 @@ export class UsersService {
         email: true,
         role: true,
         isBlocked: true,
+        isAvailable: true,
         latitude: true,
         longitude: true,
         phoneNumber: true,
@@ -104,6 +106,31 @@ export class UsersService {
 
     return {
       message: 'User profile updated successfully',
+      result: updated,
+    };
+  }
+
+  async setAvailability(userId: number, isAvailable: boolean) {
+    const existing = await this.prisma.user.findUnique({ where: { id: userId }, select: { id: true } });
+    if (!existing) {
+      throw new NotFoundException('User not found');
+    }
+
+    const updated = await this.prisma.user.update({
+      where: { id: userId },
+      data: { isAvailable },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        isBlocked: true,
+        isAvailable: true,
+      },
+    });
+
+    return {
+      message: 'Caregiver availability updated successfully',
       result: updated,
     };
   }
