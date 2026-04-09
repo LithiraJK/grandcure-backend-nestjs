@@ -32,7 +32,16 @@ export class AssignmentsController {
   @Roles('PATIENT')
   @Post('request')
   requestAssignment(@Req() req: AuthenticatedRequest, @Body() dto: RequestAssignmentDto) {
-    return this.assignmentsService.requestAssignment(req.user.id, req.user.role, dto.type, dto.notes);
+    return this.assignmentsService.requestAssignment(
+      req.user.id,
+      req.user.role,
+      dto.type,
+      dto.date,
+      dto.startTime,
+      dto.endTime,
+      dto.location,
+      dto.notes,
+    );
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)

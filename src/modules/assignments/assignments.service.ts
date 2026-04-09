@@ -13,15 +13,32 @@ import { calculateDistance } from '../../common/utils/distance.util';
 export class AssignmentsService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async requestAssignment(patientId: number, role: Role, type?: string, notes?: string) {
+  async requestAssignment(
+    patientId: number,
+    role: Role,
+    type: string | undefined,
+    date: string,
+    startTime: string,
+    endTime: string,
+    location: string,
+    notes?: string,
+  ) {
     if (role !== Role.PATIENT) {
       throw new ForbiddenException('Only PATIENT can create assignment requests');
+    }
+
+    if (startTime >= endTime) {
+      throw new BadRequestException('startTime must be earlier than endTime');
     }
 
     const assignment = await this.prisma.assignment.create({
       data: {
         patientId,
         type,
+        date: new Date(date),
+        startTime,
+        endTime,
+        location,
         notes,
       },
     });

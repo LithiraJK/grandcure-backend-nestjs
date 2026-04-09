@@ -53,6 +53,10 @@ model Assignment {
   patientId   Int
   careGiverId Int?
   type        String           @default("NORMAL")
+  date        DateTime?        @db.Date
+  startTime   String?
+  endTime     String?
+  location    String?
   status      AssignmentStatus @default(PENDING)
   notes       String?
   createdAt   DateTime         @default(now())
