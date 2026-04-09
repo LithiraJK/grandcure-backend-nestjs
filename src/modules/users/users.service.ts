@@ -71,6 +71,8 @@ export class UsersService {
     const updated = await this.prisma.user.update({
       where: { id: userId },
       data: {
+        latitude: dto.latitude,
+        longitude: dto.longitude,
         phoneNumber: dto.phoneNumber,
         dateOfBirth: dto.dateOfBirth ? new Date(dto.dateOfBirth) : undefined,
         address: dto.address,
