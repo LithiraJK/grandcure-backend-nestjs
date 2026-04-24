@@ -6,26 +6,81 @@ datasource db {
   provider = "postgresql"
 }
 
+
 enum Role {
   PATIENT
-  DOCTOR
+  CARE_GIVER
   ADMIN
 }
 
-model User {
-  id        Int      @id @default(autoincrement())
-  name      String
-  email     String   @unique
-  password  String
-  role      Role     @default(PATIENT)
-  createdAt DateTime @default(now())
+enum AssignmentStatus {
+  PENDING
+  ACCEPTED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
 }
 
-model Appointment {
-  id        Int      @id @default(autoincrement())
-  date      String
-  time      String
-  status    String
-  patientId Int
-  doctorId  Int
+model User {
+  id                    Int          @id @default(autoincrement())
+  name                  String
+  email                 String       @unique
+  password              String
+  role                  Role         @default(PATIENT)
+  isVerified            Boolean      @default(false)
+  isBlocked             Boolean      @default(false)
+  isAvailable           Boolean      @default(false)
+  latitude              Float?
+  longitude             Float?
+  phoneNumber           String?
+  dateOfBirth           DateTime?    @db.Date
+  address               String?
+  designation           String?
+  hourlyRate            Float?
+  profileImageUrl       String?
+  idDocumentUrl         String?
+  certDocumentUrl       String?
+  createdAt             DateTime     @default(now())
+  patientAssignments    Assignment[] @relation("PatientAssignments")
+  careGiverAssignments  Assignment[] @relation("CareGiverAssignments")
+  patientReviews        Review[]     @relation("PatientReviews")
+  careGiverReviews      Review[]     @relation("CareGiverReviews")
+
+}
+
+model Assignment {
+  id          Int              @id @default(autoincrement())
+  patientId   Int
+  careGiverId Int?
+  type        String           @default("NORMAL")
+  date        DateTime?        @db.Date
+  startTime   String?
+  endTime     String?
+  location    String?
+  status      AssignmentStatus @default(PENDING)
+  notes       String?
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  patient     User             @relation("PatientAssignments", fields: [patientId], references: [id])
+  careGiver   User?            @relation("CareGiverAssignments", fields: [careGiverId], references: [id])
+  review      Review?
+}
+
+model Review {
+  id           Int        @id @default(autoincrement())
+  assignmentId Int        @unique
+  patientId    Int
+  careGiverId  Int
+  rating       Int
+  comment      String?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  assignment   Assignment @relation(fields: [assignmentId], references: [id])
+  patient      User       @relation("PatientReviews", fields: [patientId], references: [id])
+  careGiver    User       @relation("CareGiverReviews", fields: [careGiverId], references: [id])
+
+  @@index([careGiverId])
+  @@index([patientId])
 }

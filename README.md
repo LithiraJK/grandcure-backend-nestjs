@@ -57,6 +57,61 @@ $ npm run test:e2e
 $ npm run test:cov
 ```
 
+## Caregiver Profile Update Flow
+
+Caregiver profile updates use a two-step flow.
+
+### 1. Upload documents
+
+- Method: POST
+- URL: /users/profile/documents
+- Auth: Bearer token (CARE_GIVER role)
+- Content-Type: multipart/form-data
+- Accepted file fields:
+  - idDocument (optional, max 1 file)
+  - certDocument (optional, max 1 file)
+- Allowed file types: image/jpeg, image/png, image/webp
+- Max file size: 5 MB each
+
+Example response:
+
+```json
+{
+  "message": "Documents uploaded successfully",
+  "result": {
+    "idDocumentUrl": "https://res.cloudinary.com/...",
+    "certDocumentUrl": "https://res.cloudinary.com/..."
+  }
+}
+```
+
+### 2. Update profile data
+
+- Method: PATCH
+- URL: /users/profile
+- Auth: Bearer token (CARE_GIVER role)
+- Content-Type: application/json
+
+Example payload:
+
+```json
+{
+  "phoneNumber": "+94771234567",
+  "dateOfBirth": "1992-08-18",
+  "address": "Colombo",
+  "designation": "Certified Caregiver",
+  "hourlyRate": 25,
+  "idDocumentUrl": "https://res.cloudinary.com/...",
+  "certDocumentUrl": "https://res.cloudinary.com/..."
+}
+```
+
+Required environment variables:
+
+- CLOUDINARY_CLOUD_NAME
+- CLOUDINARY_API_KEY
+- CLOUDINARY_API_SECRET
+
 ## Deployment
 
 When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
